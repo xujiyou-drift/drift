@@ -44,6 +44,10 @@ spec:
               leaderPort:
                 format: int32
                 type: integer
+              pvcName:
+                type: string
+              dataDir:
+                type: string
             required:
             - clientPort
             - size

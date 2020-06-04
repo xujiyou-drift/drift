@@ -23,10 +23,7 @@ type PvcRecord struct {
 
 func FindDriftInitCr(c *gin.Context) {
 	driftInitInstance := &appv1alpha1.DriftInit{}
-	err := mgr.GetClient().Get(context.TODO(), types.NamespacedName{
-		Name:      DriftName,
-		Namespace: "",
-	}, driftInitInstance)
+	err := mgr.GetClient().Get(context.TODO(), types.NamespacedName{Name: DriftName, Namespace: ""}, driftInitInstance)
 	if err != nil {
 		log.Println(err)
 		if errors.IsNotFound(err) {
@@ -48,10 +45,6 @@ func CreateDriftInit(c *gin.Context) {
 		return
 	}
 	var driftInit = appv1alpha1.DriftInit{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "app.drift.com/v1alpha1",
-			Kind:       "DriftInit",
-		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name: DriftName,
 		},

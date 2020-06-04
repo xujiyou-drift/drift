@@ -6,15 +6,18 @@ import (
 )
 
 type ZooKeeperSpec struct {
-	Size       int32 `json:"size"`
-	MinSize    int32 `json:"minSize"`
-	ClientPort int32 `json:"clientPort"`
-	ServerPort int32 `json:"serverPort"`
-	LeaderPort int32 `json:"leaderPort"`
+	Namespace  string `json:"namespace"`
+	Size       int32  `json:"size"`
+	MinSize    int32  `json:"minSize"`
+	ClientPort int32  `json:"clientPort"`
+	ServerPort int32  `json:"serverPort"`
+	LeaderPort int32  `json:"leaderPort"`
+	PvcName    string `json:"pvcName,omitempty"`
+	DataDir    string `json:"dataDir"`
 }
 
 type ZooKeeperStatus struct {
-	Nodes []string `json:"nodes"`
+	Nodes []string `json:"nodes,omitempty"`
 }
 
 type ZooKeeper struct {

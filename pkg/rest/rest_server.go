@@ -134,6 +134,7 @@ func StartRestServer(m manager.Manager) {
 		authApi.GET("/init", FindDriftInitCr)
 		authApi.POST("/init", CreateDriftInit)
 		authApi.POST("/init/pvc", RecordPvc)
+		authApi.POST("/init/zookeeper", CreateZooKeeper)
 	}
 
 	if err := http.ListenAndServe("0.0.0.0:8000", router); err != nil {

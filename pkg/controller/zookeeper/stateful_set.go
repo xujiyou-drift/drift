@@ -4,6 +4,7 @@ import (
 	appv1alpha1 "github.com/xujiyou-drift/drift/pkg/apis/app/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"strconv"
 )
@@ -12,7 +13,7 @@ func NewStatefulSet(zookeeper *appv1alpha1.ZooKeeper) *appsv1.StatefulSet {
 	labels := map[string]string{
 		"app": zookeeper.Name,
 	}
-	return &appsv1.StatefulSet{
+	var statefulSet = &appsv1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      zookeeper.Name,
 			Namespace: zookeeper.Namespace,
@@ -62,6 +63,9 @@ func NewStatefulSet(zookeeper *appv1alpha1.ZooKeeper) *appsv1.StatefulSet {
 								}, {
 									Name:  "ELECTION_PORT",
 									Value: strconv.Itoa(int(zookeeper.Spec.LeaderPort)),
+								}, {
+									Name:  "DATA_DIR",
+									Value: zookeeper.Spec.DataDir,
 								},
 							},
 						},
@@ -75,4 +79,36 @@ func NewStatefulSet(zookeeper *appv1alpha1.ZooKeeper) *appsv1.StatefulSet {
 			},
 		},
 	}
+
+	if zookeeper.Spec.PvcName != "" {
+		quantity, _ := resource.ParseQuantity("5Gi")
+		statefulSet.Spec.VolumeClaimTemplates = []corev1.PersistentVolumeClaim{
+			{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "datadir",
+					Annotations: map[string]string{
+						"volume.beta.kubernetes.io/storage-class": "csi-rbd-sc",
+					},
+				},
+				Spec: corev1.PersistentVolumeClaimSpec{
+					AccessModes: []corev1.PersistentVolumeAccessMode{
+						corev1.ReadWriteOnce,
+					},
+					Resources: corev1.ResourceRequirements{
+						Requests: corev1.ResourceList{
+							corev1.ResourceStorage: quantity,
+						},
+					},
+				},
+			},
+		}
+		statefulSet.Spec.Template.Spec.Containers[0].VolumeMounts = []corev1.VolumeMount{
+			{
+				Name:      "datadir",
+				MountPath: zookeeper.Spec.DataDir,
+			},
+		}
+	}
+
+	return statefulSet
 }
