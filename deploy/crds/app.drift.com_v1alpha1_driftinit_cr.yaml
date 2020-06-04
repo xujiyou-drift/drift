@@ -1,0 +1,7 @@
+apiVersion: app.drift.com/v1alpha1
+kind: DriftInit
+metadata:
+  name: drift-instance
+spec:
+  namespace: one
+  components: ["ZooKeeper"]
