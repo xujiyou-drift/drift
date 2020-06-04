@@ -37,7 +37,7 @@ func NewStatefulSet(zookeeper *appv1alpha1.ZooKeeper) *appsv1.StatefulSet {
 					Containers: []corev1.Container{
 						{
 							Name:  "drift-zookeeper",
-							Image: "registry.cn-chengdu.aliyuncs.com/bbd-image/drift-zookeeper:v0.0.10",
+							Image: "registry.cn-chengdu.aliyuncs.com/bbd-image/drift-zookeeper:v0.0.11",
 							Ports: []corev1.ContainerPort{
 								{
 									ContainerPort: zookeeper.Spec.ClientPort,
@@ -53,7 +53,7 @@ func NewStatefulSet(zookeeper *appv1alpha1.ZooKeeper) *appsv1.StatefulSet {
 							Env: []corev1.EnvVar{
 								{
 									Name:  "SERVER_NUMBER",
-									Value: "3",
+									Value: strconv.Itoa(int(zookeeper.Spec.Size)),
 								}, {
 									Name:  "STATEFUL_SET_NAME",
 									Value: zookeeper.Name,

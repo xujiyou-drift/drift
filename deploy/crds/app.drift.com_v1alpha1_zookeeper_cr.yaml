@@ -2,6 +2,7 @@ apiVersion: app.drift.com/v1alpha1
 kind: ZooKeeper
 metadata:
   name: zk-cluster
+  namespace: one1
 spec:
   size: 3
   minSize: 1
