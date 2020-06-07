@@ -2,7 +2,6 @@ package zookeeper
 
 import (
 	"context"
-	"fmt"
 	appv1alpha1 "github.com/xujiyou-drift/drift/pkg/apis/app/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -64,12 +63,11 @@ func (r *ReconcileZooKeeper) Reconcile(request reconcile.Request) (reconcile.Res
 	err := r.client.Get(context.TODO(), request.NamespacedName, zooKeeperInstance)
 	if err != nil {
 		if errors.IsNotFound(err) {
+			DeleteAllZooKeeperResource(r.client, request)
 			return reconcile.Result{}, nil
 		}
 		return reconcile.Result{}, err
 	}
-
-	fmt.Printf("%+v\n", zooKeeperInstance)
 
 	clientService := NewClientService(zooKeeperInstance)
 	headlessService := NewHeadlessService(zooKeeperInstance)
@@ -109,12 +107,4 @@ func (r *ReconcileZooKeeper) Reconcile(request reconcile.Request) (reconcile.Res
 	}
 
 	return reconcile.Result{}, nil
-}
-
-func getPodNames(pods []corev1.Pod) []string {
-	var podNames []string
-	for _, pod := range pods {
-		podNames = append(podNames, pod.Name)
-	}
-	return podNames
 }
