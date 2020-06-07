@@ -1,7 +1,6 @@
 package v1alpha1
 
 import (
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
@@ -13,9 +12,8 @@ const (
 )
 
 type PvcInfo struct {
-	StorageClass string                       `json:"storageClass"`
-	VolumeMode   *corev1.PersistentVolumeMode `json:"volumeMode"`
-	Storage      string                       `json:"storage"`
+	StorageClass string `json:"storageClass"`
+	Storage      string `json:"storage"`
 }
 
 type DriftInitSpec struct {

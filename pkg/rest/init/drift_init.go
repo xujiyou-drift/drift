@@ -1,4 +1,4 @@
-package rest
+package init
 
 import (
 	"context"
@@ -6,11 +6,9 @@ import (
 	appv1alpha1 "github.com/xujiyou-drift/drift/pkg/apis/app/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"log"
-	"strings"
 )
 
 const DriftName = "drift-instance"
@@ -23,7 +21,7 @@ type PvcRecord struct {
 
 func FindDriftInitCr(c *gin.Context) {
 	driftInitInstance := &appv1alpha1.DriftInit{}
-	err := mgr.GetClient().Get(context.TODO(), types.NamespacedName{Name: DriftName, Namespace: ""}, driftInitInstance)
+	err := Mgr.GetClient().Get(context.TODO(), types.NamespacedName{Name: DriftName, Namespace: ""}, driftInitInstance)
 	if err != nil {
 		log.Println(err)
 		if errors.IsNotFound(err) {
@@ -57,18 +55,18 @@ func CreateDriftInit(c *gin.Context) {
 		},
 	}
 
-	namespaceErr := mgr.GetClient().Create(context.TODO(), &namespace)
+	namespaceErr := Mgr.GetClient().Create(context.TODO(), &namespace)
 	if namespaceErr != nil && !errors.IsAlreadyExists(namespaceErr) {
 		log.Println("创建 Namespace 失败：", namespaceErr)
 		c.JSON(200, gin.H{"code": 1, "errMsg": "创建 Namespace 失败"})
 		return
 	}
 
-	initErr := mgr.GetClient().Create(context.TODO(), &driftInit)
+	initErr := Mgr.GetClient().Create(context.TODO(), &driftInit)
 	if initErr != nil && errors.IsAlreadyExists(initErr) {
-		_ = mgr.GetClient().Get(context.TODO(), types.NamespacedName{Name: driftInit.Name}, &driftInit)
+		_ = Mgr.GetClient().Get(context.TODO(), types.NamespacedName{Name: driftInit.Name}, &driftInit)
 		driftInit.Spec = driftInitSpec
-		initErr = mgr.GetClient().Update(context.TODO(), &driftInit)
+		initErr = Mgr.GetClient().Update(context.TODO(), &driftInit)
 		if initErr != nil {
 			log.Println("更新 DriftInit 失败：", initErr)
 			c.JSON(200, gin.H{"code": 1, "errMsg": "更新 DriftInit 失败"})
@@ -92,7 +90,7 @@ func RecordPvc(c *gin.Context) {
 	}
 
 	var driftInit appv1alpha1.DriftInit
-	err = mgr.GetClient().Get(context.TODO(), types.NamespacedName{Name: DriftName}, &driftInit)
+	err = Mgr.GetClient().Get(context.TODO(), types.NamespacedName{Name: DriftName}, &driftInit)
 	if err != nil {
 		c.JSON(200, gin.H{"code": 2, "errMsg": "数据查找失败"})
 		return
@@ -103,18 +101,9 @@ func RecordPvc(c *gin.Context) {
 
 	if pvcRecord.Pvc != nil {
 		driftInit.Spec.Pvc = pvcRecord.Pvc
-		for componentType, PvcInfo := range driftInit.Spec.Pvc {
-			log.Println("创建PVC...")
-			err = createPvc(componentType, PvcInfo, driftInit.Spec.NameSpace)
-			if err != nil {
-				c.JSON(200, gin.H{"code": 4, "errMsg": "创建PVC失败"})
-				log.Println("创建PVC失败", err)
-				return
-			}
-		}
 	}
 
-	err = mgr.GetClient().Update(context.TODO(), &driftInit)
+	err = Mgr.GetClient().Update(context.TODO(), &driftInit)
 	if err != nil {
 		c.JSON(200, gin.H{"code": 3, "errMsg": "数据更新失败"})
 		return
@@ -122,38 +111,19 @@ func RecordPvc(c *gin.Context) {
 	c.JSON(200, gin.H{"code": 0, "errMsg": "更新成功"})
 }
 
-func createPvc(componentType appv1alpha1.ComponentType, pvcInfo appv1alpha1.PvcInfo, namespace string) error {
-	quantity, err := resource.ParseQuantity(pvcInfo.Storage)
+func Complete(c *gin.Context) {
+	var driftInit appv1alpha1.DriftInit
+	err := Mgr.GetClient().Get(context.TODO(), types.NamespacedName{Name: DriftName}, &driftInit)
 	if err != nil {
-		log.Println("解析数据失败:", err)
-		return err
-	}
-	var pvcName = strings.ToLower(string(componentType)) + "-pvc"
-	var pvc = corev1.PersistentVolumeClaim{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      pvcName,
-			Namespace: namespace,
-		},
-		Spec: corev1.PersistentVolumeClaimSpec{
-			AccessModes: []corev1.PersistentVolumeAccessMode{
-				corev1.ReadWriteOnce,
-			},
-			VolumeMode: pvcInfo.VolumeMode,
-			Resources: corev1.ResourceRequirements{
-				Requests: corev1.ResourceList{
-					corev1.ResourceStorage: quantity,
-				},
-			},
-			StorageClassName: &pvcInfo.StorageClass,
-		},
+		c.JSON(200, gin.H{"code": 2, "errMsg": "数据查找失败"})
+		return
 	}
 
-	err = mgr.GetClient().Create(context.TODO(), &pvc)
-	if err != nil && errors.IsAlreadyExists(err) {
-		return nil
-	} else if err != nil {
-		return err
+	driftInit.Spec.Complete = true
+	err = Mgr.GetClient().Update(context.TODO(), &driftInit)
+	if err != nil {
+		c.JSON(200, gin.H{"code": 3, "errMsg": "数据更新失败"})
+		return
 	}
-
-	return nil
+	c.JSON(200, gin.H{"code": 0, "errMsg": "更新成功"})
 }

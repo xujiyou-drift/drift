@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"github.com/xujiyou-drift/drift/pkg/rest/init"
 	"log"
 	"net/http"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -24,10 +25,8 @@ type User struct {
 	LastName  string
 }
 
-var mgr manager.Manager
-
 func StartRestServer(m manager.Manager) {
-	mgr = m
+	init.Mgr = m
 	router := gin.New()
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
@@ -131,10 +130,11 @@ func StartRestServer(m manager.Manager) {
 	authApi.GET("/refresh_token", authMiddleware.RefreshHandler)
 	authApi.Use(authMiddleware.MiddlewareFunc())
 	{
-		authApi.GET("/init", FindDriftInitCr)
-		authApi.POST("/init", CreateDriftInit)
-		authApi.POST("/init/pvc", RecordPvc)
-		authApi.POST("/init/zookeeper", CreateZooKeeper)
+		authApi.GET("/init", init.FindDriftInitCr)
+		authApi.POST("/init", init.CreateDriftInit)
+		authApi.POST("/init/pvc", init.RecordPvc)
+		authApi.POST("/init/zookeeper", init.CreateZooKeeper)
+		authApi.POST("/init/complete", init.Complete)
 	}
 
 	if err := http.ListenAndServe("0.0.0.0:8000", router); err != nil {

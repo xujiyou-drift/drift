@@ -37,7 +37,7 @@ func NewStatefulSet(zookeeper *appv1alpha1.ZooKeeper) *appsv1.StatefulSet {
 					Containers: []corev1.Container{
 						{
 							Name:  "drift-zookeeper",
-							Image: "registry.cn-chengdu.aliyuncs.com/bbd-image/drift-zookeeper:v0.0.11",
+							Image: "registry.prod.bbdops.com/common/drift-zookeeper:v0.0.11",
 							Ports: []corev1.ContainerPort{
 								{
 									ContainerPort: zookeeper.Spec.ClientPort,
@@ -70,30 +70,23 @@ func NewStatefulSet(zookeeper *appv1alpha1.ZooKeeper) *appsv1.StatefulSet {
 							},
 						},
 					},
-					ImagePullSecrets: []corev1.LocalObjectReference{
-						{
-							Name: "docker-secret",
-						},
-					},
 				},
 			},
 		},
 	}
 
-	if zookeeper.Spec.PvcName != "" {
-		quantity, _ := resource.ParseQuantity("5Gi")
+	if zookeeper.Spec.StorageClass != "" && zookeeper.Spec.Storage != "" {
+		quantity, _ := resource.ParseQuantity(zookeeper.Spec.Storage)
 		statefulSet.Spec.VolumeClaimTemplates = []corev1.PersistentVolumeClaim{
 			{
 				ObjectMeta: metav1.ObjectMeta{
-					Name: "datadir",
-					Annotations: map[string]string{
-						"volume.beta.kubernetes.io/storage-class": "csi-rbd-sc",
-					},
+					Name: zookeeper.Name + "-data",
 				},
 				Spec: corev1.PersistentVolumeClaimSpec{
 					AccessModes: []corev1.PersistentVolumeAccessMode{
 						corev1.ReadWriteOnce,
 					},
+					StorageClassName: &zookeeper.Spec.StorageClass,
 					Resources: corev1.ResourceRequirements{
 						Requests: corev1.ResourceList{
 							corev1.ResourceStorage: quantity,
@@ -104,7 +97,7 @@ func NewStatefulSet(zookeeper *appv1alpha1.ZooKeeper) *appsv1.StatefulSet {
 		}
 		statefulSet.Spec.Template.Spec.Containers[0].VolumeMounts = []corev1.VolumeMount{
 			{
-				Name:      "datadir",
+				Name:      zookeeper.Name + "-data",
 				MountPath: zookeeper.Spec.DataDir,
 			},
 		}

@@ -48,6 +48,10 @@ spec:
                 type: string
               dataDir:
                 type: string
+              storageClass:
+                type: string
+              storage:
+                type: string
             required:
             - clientPort
             - size
