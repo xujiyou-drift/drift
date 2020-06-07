@@ -7,7 +7,6 @@ spec:
   size: 3
   minSize: 1
   clientPort: 2181
-  serverPort: 2888
-  leaderPort: 3888
-  pvcName: "zookeeper-pvc"
+  serverPort: 2887
+  leaderPort: 3887
   dataDir: /var/lib/zookeeper

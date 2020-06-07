@@ -36,17 +36,15 @@ type ZooKeeperList struct {
 }
 
 func (in *ZooKeeperList) DeepCopyObject() runtime.Object {
-	out := ZooKeeperList{}
-	in.DeepCopyInto(&out)
-
-	return &out
+	//out := ZooKeeperList{}
+	//in.DeepCopyInto(&out)
+	//
+	//return &out
+	return in.DeepCopy()
 }
 
 func (in *ZooKeeper) DeepCopyObject() runtime.Object {
-	out := ZooKeeper{}
-	in.DeepCopyInto(&out)
-
-	return &out
+	return in.DeepCopy()
 }
 
 func init() {
