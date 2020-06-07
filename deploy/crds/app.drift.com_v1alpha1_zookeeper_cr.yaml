@@ -5,8 +5,8 @@ metadata:
   namespace: one1
 spec:
   size: 3
-  minSize: 1
+  minSize: 2
   clientPort: 2181
-  serverPort: 2887
-  leaderPort: 3887
+  serverPort: 2999
+  leaderPort: 3999
   dataDir: /var/lib/zookeeper
