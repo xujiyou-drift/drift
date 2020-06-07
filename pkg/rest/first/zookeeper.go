@@ -1,4 +1,4 @@
-package init
+package first
 
 import (
 	"context"
@@ -58,7 +58,7 @@ func CreateZooKeeper(c *gin.Context) {
 		return
 	}
 
-	driftInit.Spec.CurrentPath = "/init/complete"
+	driftInit.Spec.CurrentPath = "/first/complete"
 	driftInit.Spec.Active = 4
 
 	err = Mgr.GetClient().Update(context.TODO(), &driftInit)

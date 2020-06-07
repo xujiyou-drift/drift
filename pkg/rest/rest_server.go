@@ -1,7 +1,7 @@
 package rest
 
 import (
-	"github.com/xujiyou-drift/drift/pkg/rest/init"
+	"github.com/xujiyou-drift/drift/pkg/rest/first"
 	"log"
 	"net/http"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -26,7 +26,7 @@ type User struct {
 }
 
 func StartRestServer(m manager.Manager) {
-	init.Mgr = m
+	first.Mgr = m
 	router := gin.New()
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
@@ -130,11 +130,11 @@ func StartRestServer(m manager.Manager) {
 	authApi.GET("/refresh_token", authMiddleware.RefreshHandler)
 	authApi.Use(authMiddleware.MiddlewareFunc())
 	{
-		authApi.GET("/init", init.FindDriftInitCr)
-		authApi.POST("/init", init.CreateDriftInit)
-		authApi.POST("/init/pvc", init.RecordPvc)
-		authApi.POST("/init/zookeeper", init.CreateZooKeeper)
-		authApi.POST("/init/complete", init.Complete)
+		authApi.GET("/init", first.FindDriftInitCr)
+		authApi.POST("/init", first.CreateDriftInit)
+		authApi.POST("/init/pvc", first.RecordPvc)
+		authApi.POST("/init/zookeeper", first.CreateZooKeeper)
+		authApi.POST("/init/complete", first.Complete)
 	}
 
 	if err := http.ListenAndServe("0.0.0.0:8000", router); err != nil {
