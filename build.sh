@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-operator-sdk build hacksoul/drift:v0.0.1
+operator-sdk build registry.prod.bbdops.com/common/drift:v0.0.1

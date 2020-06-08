@@ -80,7 +80,7 @@ func NewStatefulSet(zookeeper *appv1alpha1.ZooKeeper) *appsv1.StatefulSet {
 		statefulSet.Spec.VolumeClaimTemplates = []corev1.PersistentVolumeClaim{
 			{
 				ObjectMeta: metav1.ObjectMeta{
-					Name: zookeeper.Name + "-data",
+					Name: "data-dir",
 				},
 				Spec: corev1.PersistentVolumeClaimSpec{
 					AccessModes: []corev1.PersistentVolumeAccessMode{
@@ -97,7 +97,7 @@ func NewStatefulSet(zookeeper *appv1alpha1.ZooKeeper) *appsv1.StatefulSet {
 		}
 		statefulSet.Spec.Template.Spec.Containers[0].VolumeMounts = []corev1.VolumeMount{
 			{
-				Name:      zookeeper.Name + "-data",
+				Name:      "data-dir",
 				MountPath: zookeeper.Spec.DataDir,
 			},
 		}
