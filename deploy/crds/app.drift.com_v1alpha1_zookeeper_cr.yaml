@@ -8,6 +8,7 @@ spec:
   size: 3
   minSize: 2
   clientPort: 2181
+  metricsPort: 7000
   serverPort: 2999
   leaderPort: 3999
   dataDir: /var/lib/zookeeper

@@ -37,7 +37,7 @@ func NewStatefulSet(zookeeper *appv1alpha1.ZooKeeper) *appsv1.StatefulSet {
 					Containers: []corev1.Container{
 						{
 							Name:  "drift-zookeeper",
-							Image: "registry.prod.bbdops.com/common/drift-zookeeper:v0.0.13",
+							Image: "registry.prod.bbdops.com/common/drift-zookeeper:v0.0.14",
 							Ports: []corev1.ContainerPort{
 								{
 									ContainerPort: zookeeper.Spec.ClientPort,

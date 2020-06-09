@@ -32,6 +32,9 @@ spec:
               clientPort:
                 format: int32
                 type: integer
+              metricsPort:
+                format: int32
+                type: integer
               dataDir:
                 type: string
               leaderPort:
@@ -60,6 +63,7 @@ spec:
             - namespace
             - serverPort
             - size
+            - metricsPort
             type: object
           status:
             properties:

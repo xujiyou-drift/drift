@@ -22,6 +22,9 @@ func NewClientService(zookeeper *appv1alpha1.ZooKeeper) *corev1.Service {
 				{
 					Name: "client",
 					Port: zookeeper.Spec.ClientPort,
+				}, {
+					Name: "metrics",
+					Port: zookeeper.Spec.MetricsPort,
 				},
 			},
 		},

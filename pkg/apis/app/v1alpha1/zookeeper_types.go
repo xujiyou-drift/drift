@@ -10,6 +10,7 @@ type ZooKeeperSpec struct {
 	Size         int32  `json:"size"`
 	MinSize      int32  `json:"minSize"`
 	ClientPort   int32  `json:"clientPort"`
+	MetricsPort  int32  `json:"metricsPort"`
 	ServerPort   int32  `json:"serverPort"`
 	LeaderPort   int32  `json:"leaderPort"`
 	DataDir      string `json:"dataDir"`

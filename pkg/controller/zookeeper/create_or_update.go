@@ -28,8 +28,10 @@ func CreateOrUpdateClientService(ctx context.Context, c client.Client, newServic
 		return controllerutil.OperationResultCreated, nil
 	}
 
-	if newService.Spec.Ports[0].Port != oldService.Spec.Ports[0].Port {
+	if newService.Spec.Ports[0].Port != oldService.Spec.Ports[0].Port ||
+		newService.Spec.Ports[1].Port != oldService.Spec.Ports[1].Port {
 		oldService.Spec.Ports[0].Port = newService.Spec.Ports[0].Port
+		oldService.Spec.Ports[1].Port = newService.Spec.Ports[1].Port
 		if err := c.Update(ctx, oldService); err != nil {
 			return controllerutil.OperationResultNone, err
 		}
