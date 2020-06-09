@@ -43,6 +43,9 @@ func NewStatefulSet(zookeeper *appv1alpha1.ZooKeeper) *appsv1.StatefulSet {
 									ContainerPort: zookeeper.Spec.ClientPort,
 									Name:          "client",
 								}, {
+									ContainerPort: zookeeper.Spec.MetricsPort,
+									Name:          "metrics",
+								}, {
 									ContainerPort: zookeeper.Spec.ServerPort,
 									Name:          "server",
 								}, {

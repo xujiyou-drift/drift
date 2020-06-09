@@ -2,6 +2,7 @@ package rest
 
 import (
 	"github.com/xujiyou-drift/drift/pkg/rest/first"
+	"github.com/xujiyou-drift/drift/pkg/rest/zookeeper"
 	"log"
 	"net/http"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -27,6 +28,7 @@ type User struct {
 
 func StartRestServer(m manager.Manager) {
 	first.Mgr = m
+	zookeeper.Mgr = m
 	router := gin.New()
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
@@ -135,6 +137,8 @@ func StartRestServer(m manager.Manager) {
 		authApi.POST("/init/pvc", first.RecordPvc)
 		authApi.POST("/init/zookeeper", first.CreateZooKeeper)
 		authApi.POST("/init/complete", first.Complete)
+
+		authApi.POST("/zookeeper/status", zookeeper.FindStatus)
 	}
 
 	if err := http.ListenAndServe("0.0.0.0:8000", router); err != nil {

@@ -169,6 +169,7 @@ func updatePublicInfo(ctx context.Context, c client.Client, newStatefulSet *apps
 		newContainer.Ports[0].ContainerPort != oldContainer.Ports[0].ContainerPort ||
 		newContainer.Ports[1].ContainerPort != oldContainer.Ports[1].ContainerPort ||
 		newContainer.Ports[2].ContainerPort != oldContainer.Ports[2].ContainerPort ||
+		newContainer.Ports[3].ContainerPort != oldContainer.Ports[3].ContainerPort ||
 		newContainer.Env[0].Value != oldContainer.Env[0].Value ||
 		newContainer.Env[1].Value != oldContainer.Env[1].Value ||
 		newContainer.Env[2].Value != oldContainer.Env[2].Value ||
@@ -179,6 +180,7 @@ func updatePublicInfo(ctx context.Context, c client.Client, newStatefulSet *apps
 		oldContainer.Ports[0].ContainerPort = newContainer.Ports[0].ContainerPort
 		oldContainer.Ports[1].ContainerPort = newContainer.Ports[1].ContainerPort
 		oldContainer.Ports[2].ContainerPort = newContainer.Ports[2].ContainerPort
+		oldContainer.Ports[3].ContainerPort = newContainer.Ports[3].ContainerPort
 		oldContainer.Env[0].Value = newContainer.Env[0].Value
 		oldContainer.Env[1].Value = newContainer.Env[1].Value
 		oldContainer.Env[2].Value = newContainer.Env[2].Value
