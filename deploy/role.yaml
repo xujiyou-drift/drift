@@ -71,6 +71,7 @@ rules:
   resources:
   - '*'
   - driftinits
+  - kafkas
   verbs:
   - create
   - delete

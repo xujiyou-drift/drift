@@ -1,0 +1,14 @@
+apiVersion: app.drift.com/v1alpha1
+kind: Kafka
+metadata:
+  name: kafka-cluster
+  namespace: drift-test
+spec:
+  namespace: drift-test
+  size: 3
+  minSize: 1
+  clientPort: 9092
+  dataDir: /var/lib/kafka
+  zookeeperAddress: zookeeper-cluster-0.zookeeper-cluster-headless-service:2181,zookeeper-cluster-1.zookeeper-cluster-headless-service:2181,zookeeper-cluster-2.zookeeper-cluster-headless-service:2181/kafka
+  storageClass: ceph-rbd
+  storage: 5Gi

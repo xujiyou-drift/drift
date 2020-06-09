@@ -1,12 +1,15 @@
 apiVersion: app.drift.com/v1alpha1
 kind: ZooKeeper
 metadata:
-  name: zk-cluster
-  namespace: one1
+  name: zookeeper-cluster
+  namespace: drift-test
 spec:
+  namespace: drift-test
   size: 3
   minSize: 2
   clientPort: 2181
   serverPort: 2999
   leaderPort: 3999
   dataDir: /var/lib/zookeeper
+  storageClass: ceph-rbd
+  storage: 5Gi

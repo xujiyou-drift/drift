@@ -9,12 +9,11 @@ spec:
     listKind: DriftInitList
     plural: driftinits
     singular: driftinit
-  scope: Cluster
+  scope: Namespaced
   versions:
   - name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: DriftInit is the Schema for the driftinits API
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -29,37 +28,41 @@ spec:
           metadata:
             type: object
           spec:
-            description: DriftInitSpec defines the desired state of DriftInit
-            type: object
             properties:
-              namespace:
-                type: string
-              components:
-                type: array
-                items:
-                  type: string
-              currentPath:
-                type: string
               active:
                 format: int32
                 type: integer
               complete:
                 type: boolean
+              components:
+                items:
+                  type: string
+                type: array
+              currentPath:
+                type: string
+              namespace:
+                type: string
               pvc:
+                additionalProperties:
+                  properties:
+                    storage:
+                      type: string
+                    storageClass:
+                      type: string
+                  required:
+                  - storage
+                  - storageClass
+                  type: object
                 type: object
-                properties:
-                  ZooKeeper:
-                    type: object
-                    properties:
-                      storageClass:
-                        type: string
-                      storage:
-                        type: string
+            required:
+            - active
+            - complete
+            - components
+            - currentPath
+            - namespace
+            type: object
           status:
-            description: DriftInitStatus defines the observed state of DriftInit
             type: object
         type: object
     served: true
     storage: true
-    subresources:
-      status: {}
