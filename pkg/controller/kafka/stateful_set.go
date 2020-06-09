@@ -83,6 +83,7 @@ func NewStatefulSet(kafka *appv1alpha1.Kafka) *appsv1.StatefulSet {
 			{
 				Name:      "data-dir",
 				MountPath: kafka.Spec.DataDir,
+				SubPath:   "data",
 			},
 		}
 	}

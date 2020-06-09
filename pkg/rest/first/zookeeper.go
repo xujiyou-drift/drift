@@ -37,7 +37,7 @@ func CreateZooKeeper(c *gin.Context) {
 
 	err = Mgr.GetClient().Create(context.TODO(), &zookeeperInstance)
 	if err != nil && errors.IsAlreadyExists(err) {
-		_ = Mgr.GetClient().Get(context.TODO(), types.NamespacedName{Name: zookeeperInstance.Name}, &zookeeperInstance)
+		_ = Mgr.GetClient().Get(context.TODO(), types.NamespacedName{Name: zookeeperInstance.Name, Namespace: zookeeperSpec.Namespace}, &zookeeperInstance)
 		zookeeperInstance.Spec = zookeeperSpec
 		err = Mgr.GetClient().Update(context.TODO(), &zookeeperInstance)
 		if err != nil {
@@ -51,22 +51,6 @@ func CreateZooKeeper(c *gin.Context) {
 		return
 	}
 
-	var driftInit appv1alpha1.DriftInit
-	err = Mgr.GetClient().Get(context.TODO(), types.NamespacedName{Name: DriftName}, &driftInit)
-	if err != nil {
-		c.JSON(200, gin.H{"code": 2, "errMsg": "数据查找失败"})
-		return
-	}
-
-	driftInit.Spec.CurrentPath = "/first/complete"
-	driftInit.Spec.Active = 4
-
-	err = Mgr.GetClient().Update(context.TODO(), &driftInit)
-	if err != nil {
-		c.JSON(200, gin.H{"code": 3, "errMsg": "数据更新失败"})
-		return
-	}
-
-	c.JSON(200, gin.H{"code": 0, "errMsg": "创建成功"})
+	c.JSON(200, gin.H{"code": 0, "errMsg": "创建 ZooKeeper 成功"})
 
 }

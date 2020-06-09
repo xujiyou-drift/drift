@@ -2,6 +2,7 @@ package rest
 
 import (
 	"github.com/xujiyou-drift/drift/pkg/rest/first"
+	"github.com/xujiyou-drift/drift/pkg/rest/kafka"
 	"github.com/xujiyou-drift/drift/pkg/rest/zookeeper"
 	"log"
 	"net/http"
@@ -29,6 +30,7 @@ type User struct {
 func StartRestServer(m manager.Manager) {
 	first.Mgr = m
 	zookeeper.Mgr = m
+	kafka.Mgr = m
 	router := gin.New()
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
@@ -136,9 +138,12 @@ func StartRestServer(m manager.Manager) {
 		authApi.POST("/init", first.CreateDriftInit)
 		authApi.POST("/init/pvc", first.RecordPvc)
 		authApi.POST("/init/zookeeper", first.CreateZooKeeper)
+		authApi.POST("/init/kafka", first.CreateKafka)
+		authApi.POST("/init/config", first.CompleteConfig)
 		authApi.POST("/init/complete", first.Complete)
 
 		authApi.POST("/zookeeper/status", zookeeper.FindStatus)
+		authApi.POST("/kafka/status", kafka.FindStatus)
 	}
 
 	if err := http.ListenAndServe("0.0.0.0:8000", router); err != nil {

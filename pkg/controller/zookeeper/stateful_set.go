@@ -102,6 +102,7 @@ func NewStatefulSet(zookeeper *appv1alpha1.ZooKeeper) *appsv1.StatefulSet {
 			{
 				Name:      "data-dir",
 				MountPath: zookeeper.Spec.DataDir,
+				SubPath:   "data",
 			},
 		}
 	}

@@ -111,6 +111,25 @@ func RecordPvc(c *gin.Context) {
 	c.JSON(200, gin.H{"code": 0, "errMsg": "更新成功"})
 }
 
+func CompleteConfig(c *gin.Context) {
+	var driftInit appv1alpha1.DriftInit
+	err := Mgr.GetClient().Get(context.TODO(), types.NamespacedName{Name: DriftName}, &driftInit)
+	if err != nil {
+		c.JSON(200, gin.H{"code": 2, "errMsg": "数据查找失败"})
+		return
+	}
+
+	driftInit.Spec.CurrentPath = "/init/complete"
+	driftInit.Spec.Active = 4
+
+	err = Mgr.GetClient().Update(context.TODO(), &driftInit)
+	if err != nil {
+		c.JSON(200, gin.H{"code": 3, "errMsg": "数据更新失败"})
+		return
+	}
+	c.JSON(200, gin.H{"code": 0, "errMsg": "数据更新成功"})
+}
+
 func Complete(c *gin.Context) {
 	var driftInit appv1alpha1.DriftInit
 	err := Mgr.GetClient().Get(context.TODO(), types.NamespacedName{Name: DriftName}, &driftInit)
