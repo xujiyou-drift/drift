@@ -85,6 +85,14 @@ kubectl get pods -n bigdata --watch
 
 ## 卸载
 
+删除大数据组件：
+
+```bash
+kubectl delete ZooKeeper zookeeper-cluster -n bigdata
+kubectl delete Kafka kafka-cluster -n bigdata
+```
+
+再删除 Drift
 ```bash
 helm uninstall my-drift ./drift --namespace drift
 ```

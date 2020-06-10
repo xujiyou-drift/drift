@@ -11,7 +11,14 @@ import (
 	"time"
 )
 
+type FindInfo struct {
+	Namespace string `json:"namespace"`
+}
+
 func FindStatus(c *gin.Context) {
+	var findInfo FindInfo
+	_ = c.BindJSON(&findInfo)
+
 	c.Header("X-Content-Type-Options", "nosniff")
 	var labels = map[string]string{
 		"app": "kafka-cluster",
@@ -19,8 +26,7 @@ func FindStatus(c *gin.Context) {
 	var podList = &corev1.PodList{}
 	ticker := time.NewTicker(5 * time.Second)
 	for _ = range ticker.C {
-		fmt.Println(time.Now())
-		err := Mgr.GetClient().List(context.TODO(), podList, client.InNamespace("drift-test"), client.MatchingLabels(labels))
+		err := Mgr.GetClient().List(context.TODO(), podList, client.InNamespace(findInfo.Namespace), client.MatchingLabels(labels))
 		if err != nil {
 			log.Println(err)
 			return
@@ -28,6 +34,16 @@ func FindStatus(c *gin.Context) {
 		jsons, _ := json.Marshal(podList)
 		_, _ = fmt.Fprintf(c.Writer, "%s", jsons)
 		c.Writer.Flush()
+
+		var running = true
+		for index := range podList.Items {
+			if podList.Items[index].Status.Phase != "Running" {
+				running = false
+			}
+		}
+		if running {
+			return
+		}
 	}
 
 }
