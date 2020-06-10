@@ -106,7 +106,7 @@ func StartRestServer(m manager.Manager) {
 		log.Fatal("JWT Error:" + err.Error())
 	}
 
-	router.POST("/login", authMiddleware.LoginHandler)
+	router.POST("/api/login", authMiddleware.LoginHandler)
 
 	router.NoRoute(authMiddleware.MiddlewareFunc(), func(c *gin.Context) {
 		claims := jwt.ExtractClaims(c)
@@ -115,7 +115,7 @@ func StartRestServer(m manager.Manager) {
 	})
 
 	authApi := router.Group("/api")
-	authApi.GET("/refresh_token", authMiddleware.RefreshHandler)
+	authApi.GET("/api/refresh_token", authMiddleware.RefreshHandler)
 	authApi.Use(authMiddleware.MiddlewareFunc())
 	{
 		authApi.GET("/init", first.FindDriftInitCr)
