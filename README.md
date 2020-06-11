@@ -84,6 +84,29 @@ kubectl get pods -n bigdata --watch
 
 ![view-pods](./images/view-pods.png)
 
+## 测试
+
+注意，kafka 在 ZooKeeper 中使用的路径不是默认的 / ，而是 /kafka， kafka 测试：
+
+```bash
+kubectl -n bigdata exec -i  -t kafka-cluster-0 -- bash
+kafka-topics.sh --zookeeper zookeeper-cluster-0.zookeeper-cluster-headless-service:2181/kafka --create --topic one --replication-factor 3 --partitions 3
+```
+
+kafka 生产者：
+```bash
+kubectl -n bigdata exec -i  -t kafka-cluster-0 -- bash
+kafka-console-producer.sh --bootstrap-server kafka-cluster-0.kafka-cluster-headless-service:9092,kafka-cluster-1.kafka-cluster-headless-service:9092,kafka-cluster-2.kafka-cluster-headless-service:9092 --topic one
+```
+
+kafka 消费者：
+```bash
+kubectl -n bigdata exec -i  -t kafka-cluster-1 -- bash
+kafka-console-consumer.sh --bootstrap-server kafka-cluster-0.kafka-cluster-headless-service:9092,kafka-cluster-1.kafka-cluster-headless-service:9092,kafka-cluster-2.kafka-cluster-headless-service:9092 --topic one --from-beginning
+```
+
+在生产者的命令行里随便几条数据，会在消费者的命令行里看到数据打印
+
 ## 使用的镜像
 
 使用到的镜像都是定制的镜像，不可以使用其他人做的镜像。
