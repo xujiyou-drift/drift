@@ -2,6 +2,9 @@ package kafka
 
 import (
 	"context"
+	appsv1 "k8s.io/api/apps/v1"
+	"k8s.io/apimachinery/pkg/types"
+	"reflect"
 
 	appv1alpha1 "github.com/xujiyou-drift/drift/pkg/apis/app/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
@@ -100,12 +103,68 @@ func (r *ReconcileKafka) Reconcile(request reconcile.Request) (reconcile.Result,
 		return reconcile.Result{}, err
 	}
 
-	result, err = CreateOrUpdateStatefulSet(context.TODO(), r.client, statefulSet)
-	reqLogger.Info("Create or update stateful set result", "result", string(result))
-	if err != nil {
-		reqLogger.Error(err, "Failed to create or update stateful set")
+	found := &appsv1.StatefulSet{}
+	err = r.client.Get(context.TODO(), types.NamespacedName{Name: kafkaInstance.Name, Namespace: kafkaInstance.Namespace}, found)
+	if err != nil && errors.IsNotFound(err) {
+		reqLogger.Info("Creating a new StatefulSet", "StatefulSet.Namespace", kafkaInstance.Namespace, "StatefulSet.Name", kafkaInstance.Name)
+		err = r.client.Create(context.TODO(), statefulSet)
+		if err != nil {
+			reqLogger.Error(err, "Failed to create new StatefulSet", "StatefulSet.Namespace", kafkaInstance.Namespace, "StatefulSet.Name", kafkaInstance.Name)
+			return reconcile.Result{}, err
+		}
+		return reconcile.Result{Requeue: true}, nil
+	} else if err != nil {
+		reqLogger.Error(err, "Failed to get StatefulSet")
 		return reconcile.Result{}, err
 	}
 
+	//result, err = CreateOrUpdateStatefulSet(context.TODO(), r.client, statefulSet)
+	//if err != nil {
+	//	reqLogger.Error(err, "Failed to create or update stateful set")
+	//	return reconcile.Result{}, err
+	//}
+
+	podList := &corev1.PodList{}
+	listOpts := []client.ListOption{
+		client.InNamespace(kafkaInstance.Namespace),
+		client.MatchingLabels(
+			map[string]string{
+				"app": kafkaInstance.Name,
+			},
+		),
+	}
+	if err = r.client.List(context.TODO(), podList, listOpts...); err != nil {
+		reqLogger.Error(err, "Failed to list pods", "Kafka.Namespace", kafkaInstance.Namespace, "Kafka.Name", kafkaInstance.Name)
+		return reconcile.Result{}, err
+	}
+
+	podNames := getPodNames(podList.Items)
+
+	// Update status.Nodes if needed
+	if !reflect.DeepEqual(podNames, kafkaInstance.Status.Nodes) {
+		kafkaInstance.Status.Nodes = podNames
+		err := r.client.Status().Update(context.TODO(), kafkaInstance)
+		if err != nil {
+			reqLogger.Error(err, "Failed to update Kafka status")
+			return reconcile.Result{}, err
+		}
+
+		for _, pod := range podList.Items {
+			pod.Labels["pod-name"] = pod.Name
+			_ = r.client.Update(context.TODO(), &pod)
+			var podService = NewPodService(kafkaInstance, pod.Name)
+			_ = r.client.Create(context.TODO(), podService)
+		}
+	}
+
 	return reconcile.Result{}, nil
+}
+
+func getPodNames(pods []corev1.Pod) []string {
+	var podNames []string
+	for _, pod := range pods {
+		podNames = append(podNames, pod.Name)
+
+	}
+	return podNames
 }

@@ -36,7 +36,7 @@ func NewStatefulSet(kafka *appv1alpha1.Kafka) *appsv1.StatefulSet {
 					Containers: []corev1.Container{
 						{
 							Name:  "drift-kafka",
-							Image: "registry.prod.bbdops.com/common/drift-kafka:v0.0.14",
+							Image: "registry.prod.bbdops.com/common/drift-kafka:v0.0.22",
 							Ports: []corev1.ContainerPort{
 								{
 									ContainerPort: kafka.Spec.ClientPort,
@@ -44,6 +44,10 @@ func NewStatefulSet(kafka *appv1alpha1.Kafka) *appsv1.StatefulSet {
 								},
 							},
 							Env: []corev1.EnvVar{
+								{
+									Name:  "EXTERNAL_ADDRESS",
+									Value: kafka.Spec.ExternalAddress,
+								},
 								{
 									Name:  "DATA_DIR",
 									Value: kafka.Spec.DataDir,

@@ -32,6 +32,8 @@ spec:
             description: KafkaSpec defines the desired state of Kafka
             type: object
             properties:
+              externalAddress:
+                type: string
               namespace:
                 type: string
               size:
@@ -54,6 +56,11 @@ spec:
           status:
             description: KafkaStatus defines the observed state of Kafka
             type: object
+            properties:
+              nodes:
+                items:
+                  type: string
+                type: array
         type: object
     served: true
     storage: true

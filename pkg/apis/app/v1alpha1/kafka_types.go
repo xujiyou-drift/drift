@@ -6,6 +6,7 @@ import (
 )
 
 type KafkaSpec struct {
+	ExternalAddress  string `json:"externalAddress"`
 	Namespace        string `json:"namespace"`
 	Size             int32  `json:"size"`
 	MinSize          int32  `json:"minSize"`
@@ -16,7 +17,9 @@ type KafkaSpec struct {
 	Storage          string `json:"storage,omitempty"`
 }
 
-type KafkaStatus struct{}
+type KafkaStatus struct {
+	Nodes []string `json:"nodes,omitempty"`
+}
 
 type Kafka struct {
 	metav1.TypeMeta   `json:",inline"`

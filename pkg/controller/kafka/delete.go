@@ -50,6 +50,10 @@ func deleteHeadlessService(c client.Client, request reconcile.Request) {
 	log.Info("删除 headless service 成功")
 }
 
+func deletePodService(c client.Client, request reconcile.Request) {
+
+}
+
 func deletePdb(c client.Client, request reconcile.Request) {
 	var pdb = &policy.PodDisruptionBudget{}
 	if err := c.Get(context.TODO(), client.ObjectKey{
