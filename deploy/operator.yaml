@@ -15,7 +15,7 @@ spec:
       serviceAccountName: drift
       containers:
         - name: drift
-          image: registry.prod.bbdops.com/common/drift:v0.0.5
+          image: registry.prod.bbdops.com/common/drift:v0.0.7
           command:
           - drift
           imagePullPolicy: Always
