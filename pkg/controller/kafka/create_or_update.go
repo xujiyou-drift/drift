@@ -95,7 +95,7 @@ func CreateOrUpdatePodDisruptionBudget(ctx context.Context, c client.Client, new
 	return controllerutil.OperationResultNone, nil
 }
 
-func CreateOrUpdateStatefulSet(ctx context.Context, c client.Client, newStatefulSet *appsv1.StatefulSet) (controllerutil.OperationResult, error) {
+func UpdateStatefulSet(ctx context.Context, c client.Client, newStatefulSet *appsv1.StatefulSet) (controllerutil.OperationResult, error) {
 	key, err := client.ObjectKeyFromObject(newStatefulSet)
 	if err != nil {
 		return controllerutil.OperationResultNone, err
@@ -103,13 +103,7 @@ func CreateOrUpdateStatefulSet(ctx context.Context, c client.Client, newStateful
 
 	var oldStatefulSet = &appsv1.StatefulSet{}
 	if err := c.Get(ctx, key, oldStatefulSet); err != nil {
-		if !errors.IsNotFound(err) {
-			return controllerutil.OperationResultNone, err
-		}
-		if err := c.Create(ctx, newStatefulSet); err != nil {
-			return controllerutil.OperationResultNone, err
-		}
-		return controllerutil.OperationResultCreated, nil
+		return controllerutil.OperationResultNone, err
 	}
 
 	newVolume := newStatefulSet.Spec.VolumeClaimTemplates

@@ -5,6 +5,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"reflect"
+	"time"
 
 	appv1alpha1 "github.com/xujiyou-drift/drift/pkg/apis/app/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
@@ -83,24 +84,27 @@ func (r *ReconcileKafka) Reconcile(request reconcile.Request) (reconcile.Result,
 	}
 
 	result, err := CreateOrUpdateClientService(context.TODO(), r.client, clientService)
-	reqLogger.Info("Create or update client service result", "result", string(result))
 	if err != nil {
 		reqLogger.Error(err, "Failed to create or update client service")
 		return reconcile.Result{}, err
+	} else {
+		reqLogger.Info("Create or update kafka client service result", "result", string(result))
 	}
 
 	result, err = CreateOrUpdateHeadlessService(context.TODO(), r.client, headlessService)
-	reqLogger.Info("Create or update headless service result", "result", string(result))
 	if err != nil {
 		reqLogger.Error(err, "Failed to create or update headless service")
 		return reconcile.Result{}, err
+	} else {
+		reqLogger.Info("Create or update kafka headless service result", "result", string(result))
 	}
 
 	result, err = CreateOrUpdatePodDisruptionBudget(context.TODO(), r.client, podDisruptionBudget)
-	reqLogger.Info("Create or update pod disruption budget result", "result", string(result))
 	if err != nil {
 		reqLogger.Error(err, "Failed to create or update pod disruption budget")
 		return reconcile.Result{}, err
+	} else {
+		reqLogger.Info("Create or update kafka pod disruption budget result", "result", string(result))
 	}
 
 	found := &appsv1.StatefulSet{}
@@ -112,17 +116,19 @@ func (r *ReconcileKafka) Reconcile(request reconcile.Request) (reconcile.Result,
 			reqLogger.Error(err, "Failed to create new StatefulSet", "StatefulSet.Namespace", kafkaInstance.Namespace, "StatefulSet.Name", kafkaInstance.Name)
 			return reconcile.Result{}, err
 		}
-		return reconcile.Result{Requeue: true}, nil
+		return reconcile.Result{Requeue: true, RequeueAfter: time.Second * 20}, nil
 	} else if err != nil {
 		reqLogger.Error(err, "Failed to get StatefulSet")
 		return reconcile.Result{}, err
 	}
 
-	//result, err = CreateOrUpdateStatefulSet(context.TODO(), r.client, statefulSet)
-	//if err != nil {
-	//	reqLogger.Error(err, "Failed to create or update stateful set")
-	//	return reconcile.Result{}, err
-	//}
+	result, err = UpdateStatefulSet(context.TODO(), r.client, statefulSet)
+	if err != nil {
+		reqLogger.Error(err, "Failed to create or update stateful set")
+		return reconcile.Result{}, err
+	} else {
+		reqLogger.Info("Update a Kafka StatefulSet", "StatefulSet.Namespace", kafkaInstance.Namespace, "StatefulSet.Name", kafkaInstance.Name)
+	}
 
 	podList := &corev1.PodList{}
 	listOpts := []client.ListOption{
@@ -136,6 +142,10 @@ func (r *ReconcileKafka) Reconcile(request reconcile.Request) (reconcile.Result,
 	if err = r.client.List(context.TODO(), podList, listOpts...); err != nil {
 		reqLogger.Error(err, "Failed to list pods", "Kafka.Namespace", kafkaInstance.Namespace, "Kafka.Name", kafkaInstance.Name)
 		return reconcile.Result{}, err
+	}
+
+	if podList.Items == nil || len(podList.Items) == 0 {
+		return reconcile.Result{Requeue: true, RequeueAfter: time.Second * 20}, nil
 	}
 
 	podNames := getPodNames(podList.Items)
