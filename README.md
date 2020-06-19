@@ -7,6 +7,8 @@
 > 可以通过界面部署和管理大数据组件
 >
 > 支持持久化储存
+>
+> 支持外部访问
 
 ## 支持的组件
 
@@ -59,7 +61,7 @@ kubectl get pods -n drift --watch
 
 ![pvc](./images/pvc.png)
 
-第七步，配置组件，默认即可：
+第七步，配置组件，Kafka 的外部访问地址需要填写，可以填写宿主机主机名，我这里主机名为 drift-1：
 
 ![config](./images/config.png)
 
@@ -76,6 +78,8 @@ kubectl get pods -n drift --watch
 kubectl get pods -n bigdata --watch
 ```
 
+由于 Kafka 依赖 ZooKeeper ，所以 Kafka 会自动重启几次。
+
 创建完成如下图所示：
 
 ![pods](./images/pods.png)
@@ -84,9 +88,17 @@ kubectl get pods -n bigdata --watch
 
 ![view-pods](./images/view-pods.png)
 
-## 测试
+## 内部测试
 
-注意，kafka 在 ZooKeeper 中使用的路径不是默认的 / ，而是 /kafka， kafka 测试：
+在 k8s 集群内部测试 ZooKeeper 集群和 Kafka 集群，先来测试 ZooKeeper：
+
+```bash
+kubectl -n bigdata exec -i  -t zookeeper-cluster-0 -- bash
+zkServer.sh status
+zkCli.sh
+```
+
+测试Kafka，注意，kafka 在 ZooKeeper 中使用的路径不是默认的 / ，而是 /kafka ：
 
 ```bash
 kubectl -n bigdata exec -i  -t kafka-cluster-0 -- bash
@@ -106,6 +118,34 @@ kafka-console-consumer.sh --bootstrap-server kafka-cluster-0.kafka-cluster-headl
 ```
 
 在生产者的命令行里随便几条数据，会在消费者的命令行里看到数据打印
+
+## 外部测试
+
+在集群外部，可以使用 Java 或其他语言的库进行连接，为了方便，可以下载官方的二进制包，使用其中的客户端工具进行测试。
+
+外部测试 ZooKeeper，端口映射：
+```bash
+kubectl port-forward zookeeper-cluster-0 -n bigdata 32181:2181 --address 0.0.0.0
+```
+
+测试 ZooKeeper：
+```bash
+zkCli.sh -server drift-1:32181
+```
+
+在外部连接 Kafka 需要专门设置，在上面已经设置了外部可访问的地址，可以查看 Kafka 对外开放的 service：
+```bash
+kubectl get svc -n bigdata 
+```
+这里为每一个 Kafka 的 Pod 都绑定了一个一一对应的 Service。
+
+测试外部连接Kafka：
+```bash
+kafka-console-producer.sh --bootstrap-server drift-1:31090,drift-1:31091,drift-1:31092 --topic one
+kafka-console-consumer.sh --bootstrap-server drift-1:31090,drift-1:31091,drift-1:31092 --topic one --from-beginning
+```
+
+![kafka](./images/kafka.png)
 
 ## 使用的镜像
 
